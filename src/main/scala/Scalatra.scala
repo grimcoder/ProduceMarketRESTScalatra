@@ -1,5 +1,5 @@
 import javax.servlet.ServletContext
-import com.github.grimcoder.producemarketrestscalatra.MyScalatraServlet
+import com.github.grimcoder.producemarketrestscalatra.ProduceMarketServlet
 
 //import com.github.masahitojp.app._
 import org.scalatra.LifeCycle
@@ -13,8 +13,9 @@ class Scalatra extends LifeCycle {
   override def init(context: ServletContext) {
 
     // Mount one or more servlets
-    context.mount(new MyScalatraServlet, "/*")
+    context.mount(new ProduceMarketServlet, "/*")
 
+    // context.initParameters("org.scalatra.cors.allowedMethods") = "GET"
     // Set up init params
     // org.scalatra.cors.allowedOrigins = "http://example.com"
   }
