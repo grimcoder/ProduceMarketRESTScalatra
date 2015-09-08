@@ -25,9 +25,8 @@ class ProduceMarketServlet extends ScalatraServlet with ScalateSupport with Lift
 
   get("/api/prices") {
     if (request.parameters.contains("id")){
-      val id = params("id")
-      val idparam = request.getParameter(id)
-      val filtered = prices.filter(_.Id == id)
+      val id = params("id").toString
+      val filtered = prices.filter(price => price.Id == Some(id))
       Extraction.decompose(
         filtered
       )
@@ -36,19 +35,25 @@ class ProduceMarketServlet extends ScalatraServlet with ScalateSupport with Lift
   }
 
   get("/api/sales") {
-
-    stream = getClass.getResourceAsStream("/sales.json")
-    val sales = Serialization.read[List[Sale]](lines);
+  stream = getClass.getResourceAsStream("/sales.json")
+  val sales = Serialization.read[List[Sale]](lines);
 
     if (request.parameters.contains("id")){
-      val id = params("id")
-      val idparam = request.getParameter(id)
-      val filtered = sales.filter(_.Id == id)
+      val id = params("id").toString
+
+      val filtered = sales.filter(_.Id == Some(id))
       Extraction.decompose(
         filtered
       )
     }
     else Extraction.decompose(sales)
+  }
+
+  post("/api/prices") {
+
+    val price : Price = parsedBody.extract[Price]
+    val a = 10
+
   }
 
   notFound {
