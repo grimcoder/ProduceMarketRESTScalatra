@@ -4,14 +4,14 @@ name := "scalatra-producemarketrest"
 
 version := "0.1.0-SNAPSHOT"
 
-scalaVersion := "2.9.2"
+scalaVersion := "2.9.3"
 
 seq(webSettings :_*)
 
 classpathTypes ~= (_ + "orbit")
 
 libraryDependencies ++= Seq(
-  "org.json4s" %% "json4s-jackson" % "3.2.6",
+  "com.github.nscala-time" %% "nscala-time" % "2.2.0",
   "org.scalatra" % "scalatra" % "2.1.1",
   "org.scalatra" % "scalatra-scalate" % "2.1.1",
   "org.scalatra" % "scalatra-scalatest" % "2.1.1" % "test",
