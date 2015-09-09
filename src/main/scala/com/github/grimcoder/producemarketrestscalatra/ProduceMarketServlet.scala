@@ -2,7 +2,7 @@ package com.github.grimcoder.producemarketrestscalatra
 
 import java.text.SimpleDateFormat
 import javax.servlet.{ServletConfig, ServletContext}
-import com.github.grimcoder.producemarketrestscalatra.dao.MemoryDataAccess
+import com.github.grimcoder.producemarketrestscalatra.dao.{DataAccessMongo, DataAccess, MemoryDataAccess}
 import com.github.grimcoder.producemarketrestscalatra.model.{PriceChange, Sale, Price}
 import net.liftweb.json._
 import org.scalatra._
@@ -11,14 +11,20 @@ import org.scalatra.scalate.ScalateSupport
 
 class ProduceMarketServlet extends ScalatraServlet with ScalateSupport with LiftJsonSupport with CorsSupport {
 
+  var dao: DataAccess = _
   implicit val formatsz = new DefaultFormats {
     override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
   }
 
-  override def init(config: ServletConfig)   {
+  override def init(config: ServletConfig){
+
     super.init(config);
     val context : ServletContext = getServletContext();
-    val dao = context.getInitParameter("dao");
+
+    dao = context.getInitParameter("dao") match  {
+      case "memory" => MemoryDataAccess
+      case _ => DataAccessMongo
+    }
   }
 
   options("/*") {
@@ -30,45 +36,46 @@ class ProduceMarketServlet extends ScalatraServlet with ScalateSupport with Lift
   get("/api/prices") {
     if (request.parameters.contains("id")) {
       val id = params("id").toString
+      val prices = dao.pricesFilter(id)
       Extraction.decompose(
-        MemoryDataAccess.pricesFilter(id)
+        prices
       )
     }
-    else Extraction.decompose(MemoryDataAccess.prices)
+    else Extraction.decompose(dao.prices)
   }
 
   get("/api/sales") {
     if (request.parameters.contains("id")) {
       val id = params("id").toString
       Extraction.decompose(
-        MemoryDataAccess.salesfilter(id)
+        dao.salesfilter(id)
       )
     }
-    else Extraction.decompose(MemoryDataAccess.sales)
+    else Extraction.decompose(dao.sales)
   }
 
   get("/api/reports/prices") {
-    Extraction.decompose(MemoryDataAccess.history)
+    Extraction.decompose(dao.history)
   }
 
   post("/api/prices") {
     val price: Price = parsedBody.extract[Price]
-    MemoryDataAccess.postPrices(price)
+    dao.postPrices(price)
   }
 
   post("/api/sales") {
     val sale: Sale = parsedBody.extract[Sale]
-    MemoryDataAccess.postSale(sale)
+    dao.postSale(sale)
   }
 
   delete("/api/prices") {
     val id = params("id").toString;
-    MemoryDataAccess.deletePrice(id)
+    dao.deletePrice(id)
   }
 
   delete("/api/sales") {
     val id = params("id").toString;
-    MemoryDataAccess.deleteSale(id)
+    dao.deleteSale(id)
   }
 
   notFound {

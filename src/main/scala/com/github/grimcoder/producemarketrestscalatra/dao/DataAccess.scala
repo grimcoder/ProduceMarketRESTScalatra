@@ -20,9 +20,9 @@ abstract class DataAccess {
 
   var prices : List[Price]
 
-  def pricesFilter(id: String)
+  def pricesFilter(id: String) : List[Price]
 
-  def salesfilter(id: String)
+  def salesfilter(id: String) : List[Sale]
 
   def postPrices(price: Price)
 
