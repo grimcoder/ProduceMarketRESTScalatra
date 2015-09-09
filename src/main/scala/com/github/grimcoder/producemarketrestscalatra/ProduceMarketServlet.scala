@@ -1,7 +1,8 @@
 package com.github.grimcoder.producemarketrestscalatra
 
 import java.text.SimpleDateFormat
-import com.github.grimcoder.producemarketrestscalatra.dao.DataAccess
+import javax.servlet.{ServletConfig, ServletContext}
+import com.github.grimcoder.producemarketrestscalatra.dao.MemoryDataAccess
 import com.github.grimcoder.producemarketrestscalatra.model.{PriceChange, Sale, Price}
 import net.liftweb.json._
 import org.scalatra._
@@ -14,6 +15,12 @@ class ProduceMarketServlet extends ScalatraServlet with ScalateSupport with Lift
     override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
   }
 
+  override def init(config: ServletConfig)   {
+    super.init(config);
+    val context : ServletContext = getServletContext();
+    val dao = context.getInitParameter("dao");
+  }
+
   options("/*") {
     response.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-HTTP-Method-Override, Content-Type, Cache-Control, Accept");
     response.setHeader("Access-Control-Allow-Methods", "HEAD,GET,PUT,POST,DELETE,OPTIONS");
@@ -24,44 +31,44 @@ class ProduceMarketServlet extends ScalatraServlet with ScalateSupport with Lift
     if (request.parameters.contains("id")) {
       val id = params("id").toString
       Extraction.decompose(
-        DataAccess.pricesFilter(id)
+        MemoryDataAccess.pricesFilter(id)
       )
     }
-    else Extraction.decompose(DataAccess.prices)
+    else Extraction.decompose(MemoryDataAccess.prices)
   }
 
   get("/api/sales") {
     if (request.parameters.contains("id")) {
       val id = params("id").toString
       Extraction.decompose(
-        DataAccess.salesfilter(id)
+        MemoryDataAccess.salesfilter(id)
       )
     }
-    else Extraction.decompose(DataAccess.sales)
+    else Extraction.decompose(MemoryDataAccess.sales)
   }
 
   get("/api/reports/prices") {
-    Extraction.decompose(DataAccess.history)
+    Extraction.decompose(MemoryDataAccess.history)
   }
 
   post("/api/prices") {
     val price: Price = parsedBody.extract[Price]
-    DataAccess.postPrices(price)
+    MemoryDataAccess.postPrices(price)
   }
 
   post("/api/sales") {
     val sale: Sale = parsedBody.extract[Sale]
-    DataAccess.postSale(sale)
+    MemoryDataAccess.postSale(sale)
   }
 
   delete("/api/prices") {
     val id = params("id").toString;
-    DataAccess.deletePrice(id)
+    MemoryDataAccess.deletePrice(id)
   }
 
   delete("/api/sales") {
     val id = params("id").toString;
-    DataAccess.deleteSale(id)
+    MemoryDataAccess.deleteSale(id)
   }
 
   notFound {
