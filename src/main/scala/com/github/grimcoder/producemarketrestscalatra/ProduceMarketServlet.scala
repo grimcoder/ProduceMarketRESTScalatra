@@ -89,7 +89,6 @@ class ProduceMarketServlet extends ScalatraServlet with ScalateSupport with Lift
 
   }
 
-
   post("/api/sales") {
 
     val sale: Sale = parsedBody.extract[Sale]
