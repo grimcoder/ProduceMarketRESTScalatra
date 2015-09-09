@@ -2,12 +2,13 @@ package com.github.grimcoder.producemarketrestscalatra
 
 import java.io.InputStream
 import java.text.SimpleDateFormat
-import com.github.grimcoder.producemarketrestscalatra.model.{Sale, Price}
+import com.github.grimcoder.producemarketrestscalatra.model.{PriceChange, Sale, Price}
 import net.liftweb.json._
 import org.scalatra._
 import org.scalatra.liftjson.LiftJsonSupport
 import org.scalatra.scalate.ScalateSupport
-import com.mongodb.casbah.Imports._
+
+import scala.util.control.Exception
 
 class ProduceMarketServlet extends ScalatraServlet with ScalateSupport with LiftJsonSupport with CorsSupport {
 
@@ -22,6 +23,12 @@ class ProduceMarketServlet extends ScalatraServlet with ScalateSupport with Lift
   val slines = scala.io.Source.fromInputStream(sstream).getLines.mkString
 
   var sales : List[Sale] = List[Sale]() ;
+
+  val hstream: InputStream  = getClass.getResourceAsStream("/priceChanges.json")
+
+  val hlines = scala.io.Source.fromInputStream(sstream).getLines.mkString
+
+  var history : List[PriceChange] = List[PriceChange]() ;
 
 
   implicit val formatsz = new DefaultFormats {
@@ -47,7 +54,6 @@ class ProduceMarketServlet extends ScalatraServlet with ScalateSupport with Lift
   }
 
   get("/api/sales") {
-
     sales = sales.length match {
       case 0 => Serialization.read[List[Sale]](slines);
       case _ => sales;
@@ -56,14 +62,21 @@ class ProduceMarketServlet extends ScalatraServlet with ScalateSupport with Lift
 
     if (request.parameters.contains("id")) {
       val id = params("id").toString
-
       val filtered = sales.filter(_.Id == Some(id))
       Extraction.decompose(
         filtered
       )
     }
-
     else Extraction.decompose(sales)
+  }
+
+  get ("/api/reports/prices"){
+    history = history.length match {
+      case 0 => Serialization.read[List[PriceChange]](hlines);
+      case _ => history
+    }
+
+    Extraction.decompose(history)
   }
 
   post("/api/prices") {
@@ -71,22 +84,24 @@ class ProduceMarketServlet extends ScalatraServlet with ScalateSupport with Lift
     val price: Price = parsedBody.extract[Price]
     price.Id match  {
       case None => {
-
         val maxId = prices.map(_.Id.get.toInt).max + 1
-
         val newPrice = Price(Some(maxId.toString), price.Price, price.ItemName)
+        val newHistory = PriceChange(newPrice.Id, newPrice.Price, newPrice.ItemName, None, "New" )
 
         prices = newPrice :: prices
+        history = newHistory :: history
+
       }
       case Some(id) => {
-
-        prices = prices.remove(_.Id==price.Id)
+        val oldPrice = prices.filter(_.Id==price.Id).head
+        prices = prices.filterNot(_.Id==price.Id)
+        prices = price :: prices
+        val newHistory = PriceChange(price.Id, price.Price, price.ItemName, Some(oldPrice.Price), "Edit" )
 
         prices = price :: prices
-
+        history = newHistory :: history
       }
     }
-
   }
 
   post("/api/sales") {
@@ -94,36 +109,31 @@ class ProduceMarketServlet extends ScalatraServlet with ScalateSupport with Lift
     val sale: Sale = parsedBody.extract[Sale]
     sale.Id match  {
       case None => {
-
         val maxId = sales.map(_.Id.get.toInt).max + 1
-
         val newPrice = Sale(Some(maxId.toString), sale.Date, sale.SaleDetails)
-
         sales = newPrice :: sales
       }
       case Some(id) => {
-
         sales = sales.remove(_.Id==sale.Id)
-
         sales = sale :: sales
-
       }
     }
-
   }
-
 
   delete("/api/prices"){
     val id = params("id").toString;
-    prices = prices.filter(price => price.Id != Some(id));
-  }
+    val oldPrice = prices.filter(_.Id==Some(id)).head
 
+    prices = prices.filter(price => price.Id != Some(id));
+    val newHistory = PriceChange(oldPrice.Id, oldPrice.Price, oldPrice.ItemName, Some(oldPrice.Price), "Delete" )
+    history = newHistory :: history
+
+  }
 
   delete("/api/sales"){
     val id = params("id").toString;
     sales = sales.filter(price => price.Id != Some(id));
   }
-
 
   notFound {
     // remove content type in case it was set through an action

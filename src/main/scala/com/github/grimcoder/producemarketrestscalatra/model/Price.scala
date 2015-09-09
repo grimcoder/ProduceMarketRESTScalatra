@@ -19,7 +19,7 @@ case class SaleDetail(ItemName: String, Price: Double, Units : Int){
 
 }
 
-case class PriceChange (Id: Option[String], Price: Double, ItemName: String, priceWas : Double, Action: String) {
+case class PriceChange (Id: Option[String], Price: Double, ItemName: String, priceWas : Option[Double], Action: String) {
 
 }
 
