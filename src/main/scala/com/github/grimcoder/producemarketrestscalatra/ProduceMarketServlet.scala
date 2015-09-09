@@ -2,33 +2,19 @@ package com.github.grimcoder.producemarketrestscalatra
 
 import java.io.InputStream
 import java.text.SimpleDateFormat
+import com.github.grimcoder.producemarketrestscalatra.dao.DataAccess
 import com.github.grimcoder.producemarketrestscalatra.model.{PriceChange, Sale, Price}
 import net.liftweb.json._
 import org.scalatra._
 import org.scalatra.liftjson.LiftJsonSupport
 import org.scalatra.scalate.ScalateSupport
 
+
+
 import scala.util.control.Exception
 
 class ProduceMarketServlet extends ScalatraServlet with ScalateSupport with LiftJsonSupport with CorsSupport {
 
-  var stream: InputStream = getClass.getResourceAsStream("/prices.json")
-
-  val lines = scala.io.Source.fromInputStream(stream).getLines.mkString
-
-  var prices = Serialization.read[List[Price]](lines);
-
-  val sstream: InputStream  = getClass.getResourceAsStream("/sales.json")
-
-  val slines = scala.io.Source.fromInputStream(sstream).getLines.mkString
-
-  var sales : List[Sale] = List[Sale]() ;
-
-  val hstream: InputStream  = getClass.getResourceAsStream("/priceChanges.json")
-
-  val hlines = scala.io.Source.fromInputStream(sstream).getLines.mkString
-
-  var history : List[PriceChange] = List[PriceChange]() ;
 
 
   implicit val formatsz = new DefaultFormats {
@@ -39,35 +25,30 @@ class ProduceMarketServlet extends ScalatraServlet with ScalateSupport with Lift
     response.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-HTTP-Method-Override, Content-Type, Cache-Control, Accept");
     response.setHeader("Access-Control-Allow-Methods", "HEAD,GET,PUT,POST,DELETE,OPTIONS");
     200
-
   }
 
   get("/api/prices") {
     if (request.parameters.contains("id")) {
       val id = params("id").toString
-      val filtered = prices.filter(price => price.Id == Some(id))
       Extraction.decompose(
-        filtered
+
+        DataAccess.pricesFilter(id)
       )
     }
-    else Extraction.decompose(prices)
+    else Extraction.decompose(DataAccess.prices)
   }
 
   get("/api/sales") {
-    sales = sales.length match {
-      case 0 => Serialization.read[List[Sale]](slines);
-      case _ => sales;
-    }
 
 
     if (request.parameters.contains("id")) {
       val id = params("id").toString
-      val filtered = sales.filter(_.Id == Some(id))
+      val filtered = DataAccess.salesfilter(_.Id == Some(id))
       Extraction.decompose(
         filtered
       )
     }
-    else Extraction.decompose(sales)
+    else Extraction.decompose(DataAccess.sales)
   }
 
   get ("/api/reports/prices"){
