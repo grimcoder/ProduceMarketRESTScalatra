@@ -8,6 +8,9 @@ import com.github.grimcoder.producemarketrestscalatra.model.{PriceChange, Price,
 object DataAccessMongo extends DataAccess{
   import com.mongodb.casbah.Imports._
 
+  val mongoClient = MongoClient("localhost", 27017)
+  val db = mongoClient("ProduceMarket")
+
   override var history: List[PriceChange] = _
 
   override def deletePrice(id: String): Unit = ()
@@ -23,7 +26,12 @@ object DataAccessMongo extends DataAccess{
   override def deleteSale(id: String): Unit = ()
 
   override var sales: List[Sale] = _
+  var test = db("prices").find.toList.head
 
-  override var prices: List[Price] = _
+  override var prices: List[Price] =
+    db("prices").find.toList.map(
+      o => Price(Some(o("_id").toString),
+      o("Price").toString.toDouble,
+      o.getAs[String]("ItemName").get ))
 
 }

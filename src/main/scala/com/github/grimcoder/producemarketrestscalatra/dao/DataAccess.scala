@@ -10,6 +10,7 @@ import net.liftweb.json.{Serialization, DefaultFormats}
  */
 abstract class DataAccess {
 
+
   implicit val formatsz = new DefaultFormats {
     override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
   }

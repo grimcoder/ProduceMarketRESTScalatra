@@ -6,9 +6,8 @@ import  java.util.Date
 /**
  * Created by taraskovtun on 9/6/15.
  */
-case class Price (Id: Option[String], Price: Double, ItemName: String) {
+case class Price (Id: Option[String], Price: Double, ItemName: String)
 
-}
 
 case class Sale (Id: Option[String], Date: Date, SaleDetails: List[SaleDetail]) {
 

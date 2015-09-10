@@ -6,7 +6,8 @@
 
     <context-param>
         <param-name>dao</param-name>
-        <param-value>memory</param-value>
+        <!--<param-value>memory</param-value>-->
+        <param-value>mongo</param-value>
     </context-param>
 
   <listener>
