@@ -1,11 +1,9 @@
 package com.github.grimcoder.producemarketrestscalatra.dao
 
 import com.github.grimcoder.producemarketrestscalatra.model.{PriceChange, Price, Sale}
+import com.mongodb.casbah.commons.ValidBSONType.ObjectId
 import com.novus.salat._
 import com.novus.salat.global._
-import com.mongodb.casbah.Imports._
-
-
 
 
 /**
@@ -27,7 +25,13 @@ object DataAccessMongo extends DataAccess{
 
   override def postSale(sale: Sale): Unit = ()
 
-  override def pricesFilter(id: String): List[Price] = null
+  override def pricesFilter(id: String): List[Price] =
+
+    db("prices").find(MongoDBObject("_id" -> new ObjectId(id))).toList.map(
+
+    obj =>
+      grater[Price].asObject(obj)
+  )
 
   override def deleteSale(id: String): Unit = ()
 
