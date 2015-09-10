@@ -12,6 +12,7 @@ classpathTypes ~= (_ + "orbit")
 
 libraryDependencies ++= Seq(
   "com.github.nscala-time" %% "nscala-time" % "2.2.0",
+  "com.novus" %% "salat" % "1.9.7",
   "org.mongodb" %% "casbah" % "2.8.2",
   "org.scalatra" % "scalatra" % "2.1.1",
   "org.scalatra" % "scalatra-scalate" % "2.1.1",

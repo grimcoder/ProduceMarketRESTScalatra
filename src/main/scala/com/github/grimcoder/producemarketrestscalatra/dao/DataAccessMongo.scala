@@ -1,6 +1,12 @@
 package com.github.grimcoder.producemarketrestscalatra.dao
 
 import com.github.grimcoder.producemarketrestscalatra.model.{PriceChange, Price, Sale}
+import com.novus.salat._
+import com.novus.salat.global._
+import com.mongodb.casbah.Imports._
+
+
+
 
 /**
  * Created by taras.kovtun on 9/9/2015.
@@ -30,8 +36,8 @@ object DataAccessMongo extends DataAccess{
 
   override var prices: List[Price] =
     db("prices").find.toList.map(
-      o => Price(Some(o("_id").toString),
-      o("Price").toString.toDouble,
-      o.getAs[String]("ItemName").get ))
+      obj =>
+      grater[Price].asObject(obj)
+    )
 
 }
