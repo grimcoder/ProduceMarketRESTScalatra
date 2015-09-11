@@ -8,7 +8,6 @@ import net.liftweb.json.{DefaultFormats, Serialization}
 
 object MemoryDataAccess extends DataAccess {
 
-
   def saveObjects = {
 
     val stream = new PrintWriter(getClass.getResource("/prices.json").getPath)
@@ -29,22 +28,19 @@ object MemoryDataAccess extends DataAccess {
   }
 
   var stream: InputStream = getClass.getResourceAsStream("/prices.json")
-
   val lines = scala.io.Source.fromInputStream(stream).getLines.mkString
-
-  var prices = Serialization.read[List[Price]](lines);
+  var lprices = Serialization.read[List[Price]](lines);
+  def prices = lprices
 
   val sstream: InputStream  = getClass.getResourceAsStream("/sales.json")
-
   val slines = scala.io.Source.fromInputStream(sstream).getLines.mkString
-
-  var sales : List[Sale] =  Serialization.read[List[Sale]](slines);
+  var lsales = Serialization.read[List[Sale]](slines);
+  def sales  =  lsales
 
   val hstream: InputStream  = getClass.getResourceAsStream("/priceChanges.json")
-
   var hlines = scala.io.Source.fromInputStream(sstream).getLines.mkString
-
-  var history : List[PriceChange] = Serialization.read[List[PriceChange]](hlines);
+  var lhistory = Serialization.read[List[PriceChange]](hlines);
+  def history : List[PriceChange] = history
 
   def pricesFilter(id: String) = prices.filter( price=> price.Id == Some(id))
 
@@ -56,16 +52,16 @@ object MemoryDataAccess extends DataAccess {
       val newPrice = Price(Some(maxId.toString), price.Price, price.ItemName)
       val newHistory = PriceChange(newPrice.Id, newPrice.Price, newPrice.ItemName, None, "New")
 
-      prices = newPrice :: prices
-      history = newHistory :: history
+      lprices = newPrice :: lprices
+      lhistory = newHistory :: lhistory
     }
 
     case Some(id) => {
       val oldPrice = prices.filter(_.Id == price.Id).head
-      prices = prices.filterNot(_.Id == price.Id)
-      prices = price :: prices
+      lprices = prices.filterNot(_.Id == price.Id)
+      lprices = price :: prices
       val newHistory = PriceChange(price.Id, price.Price, price.ItemName, Some(oldPrice.Price), "Edit")
-      history = newHistory :: history
+      lhistory = newHistory :: history
     }
 
       saveObjects
@@ -75,11 +71,11 @@ object MemoryDataAccess extends DataAccess {
     case None => {
       val maxId = sales.map(_.Id.get.toInt).max + 1
       val newPrice = Sale(Some(maxId.toString), sale.Date, sale.SaleDetails)
-      sales = newPrice :: sales
+      lsales = newPrice :: sales
     }
     case Some(id) => {
-      sales = sales.filterNot(_.Id == sale.Id)
-      sales = sale :: sales
+      lsales = sales.filterNot(_.Id == sale.Id)
+      lsales = sale :: sales
     }
 
       saveObjects
@@ -88,15 +84,15 @@ object MemoryDataAccess extends DataAccess {
   def deletePrice(id: String) = {
     val oldPrice = prices.filter(_.Id == Some(id)).head
 
-    prices = prices.filter(price => price.Id != Some(id));
+    lprices = prices.filter(price => price.Id != Some(id));
     val newHistory = PriceChange(oldPrice.Id, oldPrice.Price, oldPrice.ItemName, Some(oldPrice.Price), "Delete")
-    history = newHistory :: history
+    lhistory = newHistory :: history
 
     saveObjects
   }
 
     def deleteSale(id: String) = {
-    sales = sales.filter(price => price.Id != Some(id))
+    lsales = sales.filter(price => price.Id != Some(id))
 
     saveObjects
   }

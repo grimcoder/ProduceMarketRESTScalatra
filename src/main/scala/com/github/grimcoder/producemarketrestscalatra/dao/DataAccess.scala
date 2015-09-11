@@ -15,11 +15,11 @@ abstract class DataAccess {
     override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
   }
 
-  var history : List[PriceChange]
+  def history : List[PriceChange]
 
-  var sales : List[Sale]
+  def sales : List[Sale]
 
-  var prices : List[Price]
+  def prices : List[Price]
 
   def pricesFilter(id: String) : List[Price]
 
