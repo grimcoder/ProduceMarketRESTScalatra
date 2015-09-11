@@ -23,6 +23,7 @@ class ObjectIdSerializer extends Serializer[ObjectId] {
   def serialize(implicit format: Formats) = {
     case x: ObjectId => JString(x.toString)
   }
+
 }
 
 class ProduceMarketServlet extends ScalatraServlet with ScalateSupport with LiftJsonSupport with CorsSupport {
