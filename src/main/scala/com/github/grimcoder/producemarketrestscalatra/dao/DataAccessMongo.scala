@@ -36,11 +36,14 @@ object DataAccessMongo extends DataAccess{
       case Some(id) => {
         val oldPrice = pricesFilter(id).head
 
-        db("prices").update(MongoDBObject("_id" -> new ObjectId(id)),
-          grater[Price].asDBObject(price) )
+        val newPriceJson = grater[Price].asDBObject(price)
 
+        newPriceJson("_id") = new ObjectId(id)
+
+        db("prices").update(MongoDBObject("_id" -> new ObjectId(id)),newPriceJson)
 
         val newHistory = PriceChange(None, price.Price, price.ItemName, Some(oldPrice.Price), "Edit")
+
         db("pricechanges").insert(grater[PriceChange].asDBObject(newHistory))
       }
   }
@@ -49,7 +52,20 @@ object DataAccessMongo extends DataAccess{
     .find(MongoDBObject("_id" -> new ObjectId(id)))
     .toList.map(toSale)
 
-  override def postSale(sale: Sale): Unit = ()
+  override def postSale(sale: Sale): Unit = sale.Id match {
+    case None => {
+      val jsonNewSale = grater[Sale].asDBObject(sale)
+      jsonNewSale("Date") = dateFormatter.format(sale.Date)
+      val  result = db("sales").insert(jsonNewSale)
+    }
+    case Some(id) => {
+      val jsonSale = grater[Sale].asDBObject(sale)
+      jsonSale("Date") = dateFormatter.format(sale.Date)
+      jsonSale("_id") = new ObjectId(id)
+      db("sales").update(MongoDBObject("_id" -> new ObjectId(id)),jsonSale)
+    }
+
+  }
 
   override def pricesFilter(id: String): List[Price] = id match {
     case "0" => List();
