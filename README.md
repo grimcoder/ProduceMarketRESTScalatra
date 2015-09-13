@@ -6,4 +6,4 @@ steps to run:
 
 > container:start 
 will start localhost at 8080 
-d
+
