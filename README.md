@@ -5,5 +5,5 @@ steps to run:
 ./sbt
 
 > container:start 
-will start localhost at 8080 
+will start localhost at 3001 
 
